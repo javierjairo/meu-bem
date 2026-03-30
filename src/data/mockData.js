@@ -13,6 +13,7 @@ export const mockData = {
       role: "O nego quente"
     }
   },
+
   gallery: [
     {
       id: 1,
@@ -21,7 +22,6 @@ export const mockData = {
       date: "14/02/2026",
       audio: "./audio/bandido nao malandro.mp3"
     },
-
     {
       id: 2,
       src: "./img/casal feliz coco.jpeg",
@@ -36,7 +36,6 @@ export const mockData = {
       date: "15/02/2026",
       audio: "./audio/Californication.mp3"
     },
-
     {
       id: 4,
       src: "./img/sorriso namoro.jpeg",
@@ -44,7 +43,6 @@ export const mockData = {
       date: "15/02/2026",
       audio: "./audio/Foi assim.mp3"
     },
-
     {
       id: 5,
       src: "./img/beijo namoro.jpeg",
@@ -52,7 +50,6 @@ export const mockData = {
       date: "15/02/2026",
       audio: "./audio/White Mustang.mp3"
     },
-
     {
       id: 6,
       src: "./img/tal do buque.jpeg",
@@ -60,7 +57,6 @@ export const mockData = {
       date: "15/02/2026",
       audio: "./audio/Hotel California.mp3"
     },
-
     {
       id: 7,
       src: "./img/dormiu pivete.jpeg",
@@ -68,7 +64,6 @@ export const mockData = {
       date: "21/02/2026",
       audio: "./audio/die for you.mp3"
     },
-
     {
       id: 8,
       src: "./img/hiper mega fofa.jpeg",
@@ -76,7 +71,6 @@ export const mockData = {
       date: "28/02/2026",
       audio: "./audio/CERA.mp3"
     },
-
     {
       id: 9,
       src: "./img/casal feliz iguatemi.jpeg",
@@ -84,7 +78,6 @@ export const mockData = {
       date: "7/03/2026",
       audio: "./audio/Se Você quiser.mp3"
     },
-
     {
       id: 10,
       src: "./img/lembrei eureca.jpeg",
@@ -92,7 +85,6 @@ export const mockData = {
       date: "7/03/2026",
       audio: "./audio/So Sei Dançar Com Você.mp3"
     },
-
     {
       id: 11,
       src: "./img/desconfiada pai.jpeg",
@@ -100,7 +92,6 @@ export const mockData = {
       date: "7/03/2026",
       audio: "./audio/mergulhei nos seus olhos .mp3"
     },
-
     {
       id: 12,
       src: "./img/sorriso churrasco.jpeg",
@@ -108,7 +99,6 @@ export const mockData = {
       date: "8/03/2026",
       audio: "./audio/Diga sim pra mim.mp3"
     },
-
     {
       id: 13,
       src: "./img/nozes.jpeg",
@@ -116,7 +106,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Like a Tattoo.mp3"
     },
-
     {
       id: 14,
       src: "./img/nozes e eu sorrindo.jpeg",
@@ -124,7 +113,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Cura.mp3"
     },
-
     {
       id: 15,
       src: "./img/felicidade extrema.jpeg",
@@ -132,7 +120,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/heart.mp3"
     },
-
     {
       id: 16,
       src: "./img/meu beijo nela.jpeg",
@@ -140,7 +127,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Amor dos deuses.mp3"
     },
-
     {
       id: 17,
       src: "./img/beijo dela .jpeg",
@@ -148,7 +134,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Lisboa .mp3"
     },
-
     {
       id: 18,
       src: "./img/papo de careta 1.jpeg",
@@ -156,7 +141,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Kiss of Life.mp3"
     },
-
     {
       id: 19,
       src: "./img/num qui dito.jpeg",
@@ -164,7 +148,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Camisa 10 .mp3"
     },
-
     {
       id: 20,
       src: "./img/pode rir.jpeg",
@@ -172,7 +155,6 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Deusa.mp3"
     },
-
     {
       id: 21,
       src: "./img/well.jpeg",
@@ -180,8 +162,8 @@ export const mockData = {
       date: "14/03/2026",
       audio: "./audio/Faixa Amarela .mp3"
     },
-
   ],
+
   pets: [
     {
       id: "p1",
@@ -199,7 +181,6 @@ export const mockData = {
       description: "Quem juntou separa, a dupla esta formada: medrosa & mijona.",
       image: "./img/kira e amora.png"
     },
-
     {
       id: "p3",
       name: "Piolho",
@@ -208,7 +189,6 @@ export const mockData = {
       description: "o rei da casa, manda e desmanda em nossos corações.",
       image: "./img/piolho.jpeg"
     },
-
     {
       id: "p4",
       name: "Hope",
@@ -218,6 +198,7 @@ export const mockData = {
       image: "./img/hope.jpeg"
     }
   ],
+
   paraNos: {
     shared: [
       {
@@ -258,7 +239,7 @@ export const mockData = {
           {
             src: "./img/homem em 10 dias.jpg",
             caption: "Esse é bom demais",
-            rotation: "-rotate-3" // estilo visual bagunçado fofo
+            rotation: "-rotate-3"
           },
           {
             src: "./img/love deluxe.jpg",
