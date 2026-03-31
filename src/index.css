@@ -5,10 +5,9 @@
 @layer base {
   body {
     @apply text-gray-200;
-    /* Um fundo infinito que parece o espaço sideral:
-       quase preto no topo para azul/roxo absurdamente escuro no meio */
     background: radial-gradient(circle at 50% 0%, #1a1025 0%, #0a0a0a 60%, #000000 100%);
     background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
@@ -35,11 +34,21 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== EFEITO GRID HOVER (estilo projeto-item) ===== */
-.favs-grid:hover .fav-item:not(:hover) {
-  transform: scale(0.88);
-  opacity: 0.45;
-  filter: blur(2px);
+/* ===== EFEITO GRID HOVER (APENAS desktop) ===== */
+@media (hover: hover) and (pointer: fine) {
+  .favs-grid:hover .fav-item:not(:hover) {
+    transform: scale(0.88);
+    opacity: 0.45;
+    filter: blur(2px);
+  }
+
+  .fav-item:hover {
+    transform: scale(1.1) !important;
+    z-index: 10;
+    opacity: 1 !important;
+    filter: none !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+  }
 }
 
 .fav-item {
@@ -50,85 +59,69 @@
   cursor: pointer;
 }
 
-.fav-item:hover {
-  transform: scale(1.1) !important;
-  z-index: 10;
-  opacity: 1 !important;
-  filter: none !important;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-}
-
-/* Em dispositivos touch sem hover real */
+/* Mobile touch feedback simples */
 @media (hover: none) and (pointer: coarse) {
-  .favs-grid:hover .fav-item:not(:hover) {
-    transform: scale(1);
-    opacity: 1;
-    filter: none;
-  }
-  .fav-item:hover {
-    transform: scale(1) !important;
+  .fav-item {
+    transition: transform 0.2s ease;
   }
   .fav-item:active {
-    transform: scale(0.95) !important;
+    transform: scale(0.96) !important;
   }
 }
 
-/* === OTIMIZAÇÕES MOBILE - Performance === */
+/* ==========================================================
+   OTIMIZAÇÕES MOBILE — Performance em celulares
+   ========================================================== */
 @media (max-width: 768px) {
-  /* Reduzir backdrop-blur pesado em celulares */
-  .backdrop-blur-md {
-    -webkit-backdrop-filter: blur(6px) !important;
-    backdrop-filter: blur(6px) !important;
-  }
-  .backdrop-blur-xl {
-    -webkit-backdrop-filter: blur(8px) !important;
-    backdrop-filter: blur(8px) !important;
-  }
-  .backdrop-blur-sm {
-    -webkit-backdrop-filter: blur(2px) !important;
-    backdrop-filter: blur(2px) !important;
-  }
-
-  /* Desabilitar blur-3xl pesado em cards no mobile */
-  .blur-3xl {
-    filter: blur(32px) !important;
-  }
-
-  /* Reduzir sombras pesadas no mobile */
-  .shadow-2xl {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
-  }
-
-  /* Forçar GPU compositing nas transições para evitar jank */
+  /* Forçar GPU compositing em elementos que animam */
   .fav-item,
   .group {
-    will-change: transform;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
 
-  /* Simplificar animações em mobile */
-  .fade-in {
-    animation-duration: 0.6s;
-  }
-  .slide-up {
-    animation-duration: 0.5s;
-  }
-}
+  /* Animações mais curtas */
+  .fade-in { animation-duration: 0.6s; }
+  .slide-up { animation-duration: 0.5s; }
 
-/* Celulares muito fracos: remover animações pesadas */
-@media (max-width: 400px) {
+  /* REMOVER backdrop-blur completamente no mobile — muito pesado */
   .backdrop-blur-md,
   .backdrop-blur-xl,
-  .backdrop-blur-sm {
+  .backdrop-blur-sm,
+  .backdrop-blur-lg {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 
+  /* Remover sombras de texto/blur pesado */
   .blur-3xl {
     display: none !important;
   }
 
+  /* Simplificar sombras */
+  .shadow-2xl {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+  }
+
+  /* Simplificar gradientes de sombra */
+  .shadow-\[0_8px_32px_0_rgba\(0\,0\,0\,0\.3\)\] {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+  }
+
+  /* Remover hover effects pesados em mobile */
+  .group-hover\:scale-105 {
+    transform: none !important;
+  }
+
+  .group-hover\:bg-purple-500\/20,
+  .group-hover\:border-purple-500\/50 {
+    background: inherit !important;
+    border-color: inherit !important;
+  }
+}
+
+/* Celulares de entrada — zero efeitos */
+@media (max-width: 420px) {
   .fade-in {
     animation: none;
     opacity: 1;
@@ -137,5 +130,10 @@
     animation: none;
     opacity: 1;
     transform: none;
+  }
+
+  /* Background fixo pode causar lag em mobile barato */
+  body {
+    background-attachment: scroll !important;
   }
 }

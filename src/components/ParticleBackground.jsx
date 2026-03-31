@@ -1,90 +1,107 @@
 import { useEffect, useState, useMemo } from "react";
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { loadSlim } from "@tsparticles/slim";
 
-function isMobileDevice() {
-  if (typeof window === 'undefined') return false;
-  return window.innerWidth < 768 || 
+// ============================================================
+// Detecção de dispositivo
+// ============================================================
+function getDeviceCategory() {
+  if (typeof window === 'undefined') return 'desktop';
+  
+  const isMobile = window.innerWidth < 768 || 
     ('ontouchstart' in window && navigator.maxTouchPoints > 0);
+  
+  if (!isMobile) return 'desktop';
+  
+  // Low-end: telas pequenas, poucos cores, hardware fraco
+  const isLowEnd = window.innerWidth < 500 || 
+    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+    // Samsung Galaxy M14 e similares
+    (navigator.deviceMemory && navigator.deviceMemory <= 4);
+  
+  return isLowEnd ? 'lowend' : 'mobile';
 }
 
-function isLowEndDevice() {
-  if (typeof window === 'undefined') return false;
-  // Telas muito pequenas ou ram limitada = low-end
-  return window.innerWidth < 400 || 
-    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+// ============================================================
+// Versão CSS pura para mobile — ZERO impacto na performance
+// ============================================================
+function CSSStars({ count }) {
+  const stars = useMemo(() => {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        size: `${0.8 + Math.random() * 1.5}px`,
+        opacity: 0.3 + Math.random() * 0.6,
+        delay: `${Math.random() * 4}s`,
+        duration: `${3 + Math.random() * 4}s`,
+      });
+    }
+    return result;
+  }, [count]);
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+      }}
+    >
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          style={{
+            position: 'absolute',
+            left: star.left,
+            top: star.top,
+            width: star.size,
+            height: star.size,
+            borderRadius: '50%',
+            backgroundColor: '#fff',
+            opacity: star.opacity,
+            animation: `starTwinkle ${star.duration} ease-in-out ${star.delay} infinite alternate`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes starTwinkle {
+          0% { opacity: 0.2; }
+          100% { opacity: 0.8; }
+        }
+      `}</style>
+    </div>
+  );
 }
 
-function getParticleOptions(isMobile, isLowEnd) {
-  // Em dispositivo low-end: partículas estáticas super leves
-  if (isLowEnd) {
-    return {
-      background: { color: { value: "transparent" } },
-      fpsLimit: 20,
-      interactivity: {
-        events: {
-          onClick: { enable: false },
-          onHover: { enable: false },
-          resize: { enable: true },
-        },
-      },
-      particles: {
-        color: { value: ["#ffffff", "#e0c3fc"] },
-        links: { enable: false },
-        move: {
-          enable: true,
-          speed: 0.15,
-          direction: "none",
-          outModes: { default: "bounce" },
-          straight: false,
-        },
-        number: { density: { enable: true, area: 1200 }, value: 12 },
-        opacity: { value: { min: 0.3, max: 0.8 } },
-        shape: { type: "circle" },
-        size: { value: { min: 0.8, max: 1.8 } },
-      },
-      detectRetina: false,
-      fullScreen: { enable: true, zIndex: 0 },
-    };
-  }
+// ============================================================
+// Versão com partículas para desktop (mantém a experiência completa)
+// ============================================================
+function DesktopParticles() {
+  const [init, setInit] = useState(false);
 
-  // Mobile normal (iPhone 12 etc): leve mas bonito
-  if (isMobile) {
-    return {
-      background: { color: { value: "transparent" } },
-      fpsLimit: 30,
-      interactivity: {
-        events: {
-          onClick: { enable: false },
-          onHover: { enable: false },
-          resize: { enable: true },
-        },
-      },
-      particles: {
-        color: { value: ["#ffffff", "#e0c3fc", "#ffc3f2"] },
-        links: { enable: false },
-        move: {
-          enable: true,
-          speed: 0.3,
-          direction: "none",
-          outModes: { default: "bounce" },
-          straight: false,
-        },
-        number: { density: { enable: true, area: 1000 }, value: 25 },
-        opacity: {
-          value: { min: 0.2, max: 0.85 },
-          animation: { enable: true, speed: 0.5, minimumValue: 0.2 },
-        },
-        shape: { type: "circle" },
-        size: { value: { min: 0.8, max: 2 } },
-      },
-      detectRetina: false,
-      fullScreen: { enable: true, zIndex: 0 },
-    };
-  }
+  useEffect(() => {
+    // Import dinâmico — não carrega o bundle de partículas no mobile
+    let cancelled = false;
+    Promise.all([
+      import("@tsparticles/react"),
+      import("@tsparticles/slim"),
+    ]).then(async ([{ default: Particles, initParticlesEngine }, { loadSlim }]) => {
+      await initParticlesEngine(async (engine) => {
+        await loadSlim(engine);
+      });
+      if (!cancelled) {
+        setInit(true);
+        // Salvar no window para reusar
+        window.__ParticlesComponent = Particles;
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
 
-  // Desktop: experiência completa
-  return {
+  const options = useMemo(() => ({
     background: { color: { value: "transparent" } },
     fpsLimit: 60,
     interactivity: {
@@ -127,29 +144,34 @@ function getParticleOptions(isMobile, isLowEnd) {
     },
     detectRetina: true,
     fullScreen: { enable: true, zIndex: 0 },
-  };
+  }), []);
+
+  if (!init || !window.__ParticlesComponent) return null;
+
+  const Particles = window.__ParticlesComponent;
+  return <Particles id="tsparticles" options={options} />;
 }
 
+// ============================================================
+// Componente principal — escolhe a versão certa por dispositivo
+// ============================================================
 export default function ParticleBackground() {
-  const [init, setInit] = useState(false);
-  const [deviceType, setDeviceType] = useState({ mobile: false, lowEnd: false });
+  const [category, setCategory] = useState('desktop');
 
   useEffect(() => {
-    const mobile = isMobileDevice();
-    const lowEnd = isLowEndDevice();
-    setDeviceType({ mobile, lowEnd });
-
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine);
-    }).then(() => setInit(true));
+    setCategory(getDeviceCategory());
   }, []);
 
-  const options = useMemo(
-    () => getParticleOptions(deviceType.mobile, deviceType.lowEnd),
-    [deviceType.mobile, deviceType.lowEnd]
-  );
+  // Low-end (Samsung M14, etc): 15 estrelas CSS simples, zero JS pesado
+  if (category === 'lowend') {
+    return <CSSStars count={15} />;
+  }
 
-  if (!init) return null;
+  // Mobile médio (iPhone 12, etc): 25 estrelas CSS com brilho
+  if (category === 'mobile') {
+    return <CSSStars count={25} />;
+  }
 
-  return <Particles id="tsparticles" options={options} />;
+  // Desktop: experiência completa com tsParticles
+  return <DesktopParticles />;
 }

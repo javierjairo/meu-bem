@@ -20,8 +20,9 @@ export default function Pets() {
                 <img
                   src={pet.image}
                   alt={pet.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                  className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-700"
                   draggable={false}
+                  loading="lazy"
                 />
               </div>
             </div>

@@ -1,25 +1,50 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Heart, Menu, X } from 'lucide-react';
+import { Heart } from 'lucide-react';
+
+// Ícone hamburger SVG puro — sem dependência de lib, garantia de renderização
+function HamburgerIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d8b4fe" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d8b4fe" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const linkBase = "transition-all duration-300 px-4 py-2 rounded-full text-sm font-medium tracking-wide";
+  const linkBase = "transition-colors duration-200 px-4 py-2 rounded-full text-sm font-medium tracking-wide";
   const getLinkClasses = ({ isActive }) =>
     isActive
       ? `${linkBase} bg-purple-700/20 text-purple-400`
       : `${linkBase} text-gray-400 hover:text-purple-300 hover:bg-white/5`;
 
-  const mobileLinkBase = "block w-full text-center py-3 px-6 rounded-xl text-base font-medium tracking-wide transition-all duration-300";
+  const mobileLinkBase = "block w-full text-center py-3 px-6 rounded-xl text-base font-medium tracking-wide transition-colors duration-200";
   const getMobileLinkClasses = ({ isActive }) =>
     isActive
       ? `${mobileLinkBase} bg-purple-700/20 text-purple-400`
-      : `${mobileLinkBase} text-gray-300 active:bg-white/5`;
+      : `${mobileLinkBase} text-gray-300 active:bg-white/10`;
 
   return (
     <>
-      <nav className="fixed w-full top-0 z-50 bg-dark/80 backdrop-blur-md border-b border-purple-900/30 slide-up">
+      <nav
+        className="fixed w-full top-0 z-50 border-b border-purple-900/30"
+        style={{
+          backgroundColor: 'rgba(10, 10, 10, 0.9)',
+        }}
+      >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
           <NavLink to="/perfis" className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors">
             <Heart size={22} className="fill-purple-500/50" />
@@ -34,37 +59,59 @@ export default function Navbar() {
             <NavLink to="/para-nos" className={getLinkClasses}>Para Nós</NavLink>
           </div>
 
-          {/* Mobile hamburger — ícone com cor inline para garantir visibilidade */}
+          {/* Mobile hamburger — SVG puro inline para garantir renderização */}
           <button
-            className="md:hidden flex items-center justify-center w-12 h-12 rounded-full active:bg-white/10 transition-colors"
+            className="md:hidden flex items-center justify-center"
             onClick={() => setMobileOpen(v => !v)}
             aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent',
+              padding: 0,
+            }}
           >
-            {mobileOpen
-              ? <X size={26} color="#d8b4fe" strokeWidth={2.5} />
-              : <Menu size={26} color="#d8b4fe" strokeWidth={2.5} />
-            }
+            {mobileOpen ? <CloseIcon /> : <HamburgerIcon />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile drawer overlay */}
+      {/* Mobile drawer overlay — sem backdrop-blur */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 md:hidden"
           onClick={() => setMobileOpen(false)}
-          style={{ animation: 'fadeIn 0.2s ease-out' }}
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          }}
         />
       )}
 
       {/* Mobile drawer */}
       <div
-        className={`fixed top-16 left-0 right-0 z-50 md:hidden transition-all duration-300 ease-out ${
-          mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-        }`}
+        className="fixed top-16 left-0 right-0 z-50 md:hidden"
+        style={{
+          opacity: mobileOpen ? 1 : 0,
+          transform: mobileOpen ? 'translateY(0)' : 'translateY(-10px)',
+          pointerEvents: mobileOpen ? 'auto' : 'none',
+          transition: 'opacity 0.2s ease, transform 0.2s ease',
+        }}
       >
-        <div className="mx-3 mt-2 p-3 rounded-2xl bg-dark/95 backdrop-blur-xl border border-purple-900/40 shadow-[0_16px_48px_rgba(0,0,0,0.6)] flex flex-col gap-1">
+        <div
+          className="mx-3 mt-2 p-3 rounded-2xl flex flex-col gap-1"
+          style={{
+            backgroundColor: 'rgba(10, 10, 10, 0.97)',
+            border: '1px solid rgba(88, 28, 135, 0.4)',
+            boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+          }}
+        >
           <NavLink to="/perfis" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Perfis</NavLink>
           <NavLink to="/galeria" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Álbum</NavLink>
           <NavLink to="/pets" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Eles</NavLink>
