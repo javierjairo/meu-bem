@@ -1,4 +1,5 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AuthProvider from './components/AuthProvider';
 import Layout from './components/Layout';
 import Profiles from './pages/Profiles';
 import Gallery from './pages/Gallery';
@@ -7,17 +8,19 @@ import ParaNos from './pages/ParaNos';
 
 function App() {
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/perfis" replace />} />
-          <Route path="perfis" element={<Profiles />} />
-          <Route path="galeria" element={<Gallery />} />
-          <Route path="pets" element={<Pets />} />
-          <Route path="para-nos" element={<ParaNos />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/perfis" replace />} />
+            <Route path="perfis" element={<Profiles />} />
+            <Route path="galeria" element={<Gallery />} />
+            <Route path="pets" element={<Pets />} />
+            <Route path="para-nos" element={<ParaNos />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </AuthProvider>
   )
 }
 

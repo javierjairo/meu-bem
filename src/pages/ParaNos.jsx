@@ -1,6 +1,7 @@
 import { mockData } from '../data/mockData';
 import SectionTitle from '../components/SectionTitle';
 import PolaroidCarousel from '../components/PolaroidCarousel';
+import TimeCapsuleSection from '../components/TimeCapsuleSection';
 import { Clapperboard, Moon, Music2, Heart } from 'lucide-react';
 
 const ICON_MAP = {
@@ -77,6 +78,11 @@ export default function ParaNos() {
             <PersonSection personKey="person2" personData={person2} individualData={individual.person2} />
           </div>
         </div>
+      </div>
+
+      {/* ===== CÁPSULA DO TEMPO ===== */}
+      <div className="slide-up" style={{ animationDelay: '0.4s' }}>
+        <TimeCapsuleSection />
       </div>
     </div>
   );
