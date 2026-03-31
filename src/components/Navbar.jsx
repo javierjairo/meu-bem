@@ -34,25 +34,36 @@ export default function Navbar() {
             <NavLink to="/para-nos" className={getLinkClasses}>Para Nós</NavLink>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — ícone com cor inline para garantir visibilidade */}
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-full text-purple-300 active:bg-white/10 transition-colors"
+            className="md:hidden flex items-center justify-center w-12 h-12 rounded-full active:bg-white/10 transition-colors"
             onClick={() => setMobileOpen(v => !v)}
             aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileOpen
+              ? <X size={26} color="#d8b4fe" strokeWidth={2.5} />
+              : <Menu size={26} color="#d8b4fe" strokeWidth={2.5} />
+            }
           </button>
         </div>
       </nav>
 
       {/* Mobile drawer overlay */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setMobileOpen(false)}
-      />
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+        />
+      )}
 
       {/* Mobile drawer */}
-      <div className={`fixed top-16 left-0 right-0 z-50 md:hidden transition-all duration-300 ease-out ${mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+      <div
+        className={`fixed top-16 left-0 right-0 z-50 md:hidden transition-all duration-300 ease-out ${
+          mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}
+      >
         <div className="mx-3 mt-2 p-3 rounded-2xl bg-dark/95 backdrop-blur-xl border border-purple-900/40 shadow-[0_16px_48px_rgba(0,0,0,0.6)] flex flex-col gap-1">
           <NavLink to="/perfis" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Perfis</NavLink>
           <NavLink to="/galeria" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Álbum</NavLink>

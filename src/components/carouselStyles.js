@@ -1,5 +1,9 @@
 // Detecta se é tela mobile (usado para ajustes de tamanho)
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 640;
+const isLowEnd = () => typeof window !== 'undefined' && (
+  window.innerWidth < 400 || 
+  (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+);
 
 export const sharedStyles = {
   wrapper: {
@@ -8,32 +12,36 @@ export const sharedStyles = {
     overflow: 'hidden',
     padding: '20px 0 40px',
     touchAction: 'pan-y',
+    // GPU aceleração
+    transform: 'translateZ(0)',
+    WebkitTransform: 'translateZ(0)',
   },
   track: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    perspective: '1200px',
+    perspective: isMobile() ? '800px' : '1200px',
     perspectiveOrigin: '50% 50%',
-    minHeight: '380px',
+    minHeight: isMobile() ? '320px' : '380px',
     position: 'relative',
   },
   btnBase: (disabled) => ({
-    width: '44px',
-    height: '44px',
+    width: '48px',
+    height: '48px',
     borderRadius: '50%',
     border: '1px solid rgba(168,85,247,0.3)',
     background: 'rgba(168,85,247,0.08)',
     color: disabled ? 'rgba(168,85,247,0.25)' : 'rgba(216,180,254,0.9)',
-    fontSize: '18px',
+    fontSize: '20px',
     cursor: disabled ? 'not-allowed' : 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'background 0.2s, color 0.2s',
-    backdropFilter: 'blur(4px)',
     WebkitTapHighlightColor: 'transparent',
     flexShrink: 0,
+    // Sem backdrop-filter no mobile para performance
+    ...(isMobile() ? {} : { backdropFilter: 'blur(4px)' }),
   }),
   controls: {
     display: 'flex',
@@ -76,14 +84,15 @@ export const sharedStyles = {
     right: 0,
     bottom: 0,
     zIndex: 9999,
-    backgroundColor: 'rgba(0,0,0,0.9)',
-    backdropFilter: 'blur(8px)',
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    // Apenas blur no desktop
+    ...(isMobile() ? {} : { backdropFilter: 'blur(8px)' }),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     opacity: isOpen ? 1 : 0,
     pointerEvents: isOpen ? 'auto' : 'none',
-    transition: 'opacity 0.4s ease',
+    transition: 'opacity 0.3s ease',
     padding: '16px',
   }),
   modalCloseBtn: {
@@ -94,10 +103,10 @@ export const sharedStyles = {
     border: '1px solid rgba(255,255,255,0.2)',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
     borderRadius: '50%',
-    width: '44px',
-    height: '44px',
+    width: '48px',
+    height: '48px',
     color: 'white',
-    fontSize: '24px',
+    fontSize: '28px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -107,4 +116,5 @@ export const sharedStyles = {
     WebkitTapHighlightColor: 'transparent',
   },
   isMobile,
+  isLowEnd,
 };

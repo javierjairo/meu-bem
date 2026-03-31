@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { sharedStyles as SS } from './carouselStyles';
 import useCarousel from './useCarousel';
 
+const isMobileCheck = () => typeof window !== 'undefined' && window.innerWidth < 640;
+
 function getCardSize() {
   if (typeof window === 'undefined') return { w: 260, h: 340 };
   const vw = window.innerWidth;
@@ -16,10 +18,16 @@ function getSpacing() {
   return window.innerWidth < 640 ? 160 : 210;
 }
 
-function buildTransform(distance, dragOffset = 0) {
+function buildTransform(distance, dragOffset = 0, mobile = false) {
   const spacing = getSpacing();
   const scale = Math.max(1 - Math.abs(distance) * 0.15, 0.5);
   const translateX = distance * spacing + dragOffset;
+
+  // Mobile: simplificar transforms (sem rotateY 3D)
+  if (mobile) {
+    return `translateX(${translateX}px) scale(${scale})`;
+  }
+
   const rotateY = distance * -14;
   const translateZ = -Math.abs(distance) * 90;
   return `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
@@ -34,12 +42,17 @@ export default function GalleryCarousel({ items = [] }) {
 
   const [cardSize, setCardSize] = useState(getCardSize());
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [mobile, setMobile] = useState(isMobileCheck());
   const audioRefs = useRef({});
   const isModalOpenRef = useRef(false);
 
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    const handleResize = () => setCardSize(getCardSize());
+    setMobile(isMobileCheck());
+    const handleResize = () => {
+      setCardSize(getCardSize());
+      setMobile(isMobileCheck());
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -100,15 +113,17 @@ export default function GalleryCarousel({ items = [] }) {
       width: `${cardSize.w}px`,
       height: `${cardSize.h}px`,
       position: 'absolute',
-      transformStyle: 'preserve-3d',
+      // Sem preserve-3d no mobile
+      ...(mobile ? {} : { transformStyle: 'preserve-3d' }),
       transition: dragOffset !== 0
-        ? 'opacity 0.2s ease'
-        : 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
-      transform: buildTransform(distance, dragOffset),
+        ? 'opacity 0.15s ease'
+        : 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s ease',
+      transform: buildTransform(distance, dragOffset, mobile),
       opacity: Math.abs(distance) > 3 ? 0 : Math.abs(distance) > 2 ? 0.3 : Math.abs(distance) > 1 ? 0.7 : 1,
       zIndex: 50 - Math.abs(distance),
       cursor: distance === 0 ? 'pointer' : 'default',
       WebkitTapHighlightColor: 'transparent',
+      willChange: 'transform',
     }),
     face: {
       position: 'absolute',
@@ -116,7 +131,9 @@ export default function GalleryCarousel({ items = [] }) {
       background: '#fff',
       borderRadius: '4px',
       padding: `10px 10px ${cardSize.h < 300 ? '50px' : '65px'} 10px`,
-      boxShadow: '0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)',
+      boxShadow: mobile
+        ? '0 4px 20px rgba(0,0,0,0.5)'
+        : '0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)',
       display: 'flex',
       flexDirection: 'column',
       backfaceVisibility: 'hidden',
@@ -162,7 +179,7 @@ export default function GalleryCarousel({ items = [] }) {
       height: 'min(75vh, 500px)',
       position: 'relative',
       transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(40px)',
-      transition: 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)',
+      transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
     }),
   };
 
@@ -180,15 +197,18 @@ export default function GalleryCarousel({ items = [] }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Só carregar audio elements quando necessário */}
       {items.map((item) =>
         item.audio && (
-          <audio key={`audio-${item.id}`} ref={el => audioRefs.current[item.id] = el} src={item.audio} loop />
+          <audio key={`audio-${item.id}`} ref={el => audioRefs.current[item.id] = el} src={item.audio} loop preload="none" />
         )
       )}
 
       <div style={SS.track}>
         {items.map((item, i) => {
           const distance = i - index;
+          // No mobile, só renderizar cards visíveis (±2)
+          if (mobile && Math.abs(distance) > 2) return null;
           return (
             <div
               key={item.id}

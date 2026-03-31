@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { sharedStyles as SS } from './carouselStyles';
 import useCarousel from './useCarousel';
 
+const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 640;
+
 function getCardSize() {
   if (typeof window === 'undefined') return { w: 220, h: 300 };
   const vw = window.innerWidth;
@@ -16,18 +18,25 @@ function getSpacing() {
   return window.innerWidth < 640 ? 140 : 190;
 }
 
-function buildTransform(distance, flipped, dragOffset = 0) {
+function buildTransform(distance, flipped, dragOffset = 0, mobile = false) {
   const spacing = getSpacing();
   const scale = Math.max(1 - Math.abs(distance) * 0.12, 0.72);
+  const translateX = distance * spacing + dragOffset;
+
+  // No mobile, usar transforms mais simples (sem rotateY 3D)
+  if (mobile) {
+    return `translateX(${translateX}px) scale(${scale})`;
+  }
+
   const rotateY = (flipped ? 180 : 0) + distance * -15;
   const translateZ = -Math.abs(distance) * 90;
-  const translateX = distance * spacing + dragOffset;
   return `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(${translateZ}px)`;
 }
 
 export default function PolaroidCarousel({ items = [] }) {
   const [modalFlipped, setModalFlipped] = useState(false);
   const [cardSize, setCardSize] = useState(getCardSize());
+  const [mobile, setMobile] = useState(isMobile());
 
   const carousel = useCarousel(items.length, { autoPlayMs: 4500 });
   const {
@@ -37,7 +46,10 @@ export default function PolaroidCarousel({ items = [] }) {
   } = carousel;
 
   useEffect(() => {
-    const handleResize = () => setCardSize(getCardSize());
+    const handleResize = () => {
+      setCardSize(getCardSize());
+      setMobile(isMobile());
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -61,15 +73,18 @@ export default function PolaroidCarousel({ items = [] }) {
       width: `${cardSize.w}px`,
       height: `${cardSize.h}px`,
       position: 'absolute',
-      transformStyle: 'preserve-3d',
+      // No mobile: sem preserve-3d (mais leve)
+      ...(mobile ? {} : { transformStyle: 'preserve-3d' }),
       transition: dragOffset !== 0
-        ? 'opacity 0.2s ease'
-        : 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.4s ease',
-      transform: buildTransform(distance, flipped, dragOffset),
+        ? 'opacity 0.15s ease'
+        : 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s ease',
+      transform: buildTransform(distance, flipped, dragOffset, mobile),
       opacity: Math.abs(distance) > 2 ? 0 : Math.abs(distance) > 1 ? 0.55 : 1,
       zIndex: 50 - Math.abs(distance),
       cursor: distance === 0 ? 'pointer' : 'default',
       WebkitTapHighlightColor: 'transparent',
+      // GPU compositing
+      willChange: 'transform',
     }),
     face: (isBack) => ({
       position: 'absolute',
@@ -80,7 +95,9 @@ export default function PolaroidCarousel({ items = [] }) {
       background: '#fff',
       borderRadius: '4px',
       padding: `8px 8px ${cardSize.h < 270 ? '36px' : '44px'} 8px`,
-      boxShadow: '0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)',
+      boxShadow: mobile
+        ? '0 4px 20px rgba(0,0,0,0.5)'
+        : '0 8px 40px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.4)',
       display: 'flex',
       flexDirection: 'column',
     }),
@@ -110,13 +127,13 @@ export default function PolaroidCarousel({ items = [] }) {
       position: 'relative',
       perspective: '1200px',
       transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(40px)',
-      transition: 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)',
+      transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)',
     }),
     modalCardInner: (flipped) => ({
       width: '100%',
       position: 'relative',
       transformStyle: 'preserve-3d',
-      transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      transition: 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
       cursor: 'pointer',
     }),
@@ -145,16 +162,21 @@ export default function PolaroidCarousel({ items = [] }) {
       <div style={SS.track}>
         {items.map((item, i) => {
           const distance = i - index;
+          // No mobile, só renderizar cards visíveis (±2)
+          if (mobile && Math.abs(distance) > 2) return null;
           return (
             <div key={i} style={S.cardOuter(distance, false)} onClick={() => handleCardClick(distance)}>
               <div style={S.face(false)}>
-                <img src={item.srcFront} alt={item.caption} style={S.photo} draggable={false} />
+                <img src={item.srcFront} alt={item.caption} style={S.photo} draggable={false} loading="lazy" />
                 <span style={S.caption}>{item.caption}</span>
               </div>
-              <div style={S.face(true)}>
-                <img src={item.srcBack} alt={`${item.caption} — verso`} style={S.photo} draggable={false} />
-                <span style={S.caption}>❤️</span>
-              </div>
+              {/* No mobile, não renderizar a face traseira no carousel (só no modal) */}
+              {!mobile && (
+                <div style={S.face(true)}>
+                  <img src={item.srcBack} alt={`${item.caption} — verso`} style={S.photo} draggable={false} loading="lazy" />
+                  <span style={S.caption}>❤️</span>
+                </div>
+              )}
             </div>
           );
         })}

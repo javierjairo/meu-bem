@@ -11,6 +11,7 @@
     background-attachment: fixed;
   }
 }
+
 /* Animações suaves personalizadas */
 @layer utilities {
   .fade-in {
@@ -72,3 +73,69 @@
   }
 }
 
+/* === OTIMIZAÇÕES MOBILE - Performance === */
+@media (max-width: 768px) {
+  /* Reduzir backdrop-blur pesado em celulares */
+  .backdrop-blur-md {
+    -webkit-backdrop-filter: blur(6px) !important;
+    backdrop-filter: blur(6px) !important;
+  }
+  .backdrop-blur-xl {
+    -webkit-backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+  .backdrop-blur-sm {
+    -webkit-backdrop-filter: blur(2px) !important;
+    backdrop-filter: blur(2px) !important;
+  }
+
+  /* Desabilitar blur-3xl pesado em cards no mobile */
+  .blur-3xl {
+    filter: blur(32px) !important;
+  }
+
+  /* Reduzir sombras pesadas no mobile */
+  .shadow-2xl {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+  }
+
+  /* Forçar GPU compositing nas transições para evitar jank */
+  .fav-item,
+  .group {
+    will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  /* Simplificar animações em mobile */
+  .fade-in {
+    animation-duration: 0.6s;
+  }
+  .slide-up {
+    animation-duration: 0.5s;
+  }
+}
+
+/* Celulares muito fracos: remover animações pesadas */
+@media (max-width: 400px) {
+  .backdrop-blur-md,
+  .backdrop-blur-xl,
+  .backdrop-blur-sm {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .blur-3xl {
+    display: none !important;
+  }
+
+  .fade-in {
+    animation: none;
+    opacity: 1;
+  }
+  .slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
