@@ -70,7 +70,8 @@ export default function TimeCapsuleSection() {
     if (!capsula.liberada) return;
 
     try {
-      // Se ainda não foi aberta, marcar como aberta
+      // Se ainda não foi aberta, tentar marcar como aberta
+      // (pode falhar se não for o criador — tudo bem, só registra)
       if (!capsula.aberta) {
         await supabase
           .from('capsulas')
@@ -78,7 +79,9 @@ export default function TimeCapsuleSection() {
             aberta: true,
             dt_abertura_real: new Date().toISOString(),
           })
-          .eq('id', capsula.id);
+          .eq('id', capsula.id)
+          .then(() => {}) // ignora erro de permissão silenciosamente
+          .catch(() => {});
       }
 
       // Buscar o conteúdo completo da View segura

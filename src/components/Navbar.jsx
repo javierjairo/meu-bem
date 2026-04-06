@@ -71,9 +71,6 @@ export default function Navbar() {
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
               padding: 0,
             }}
