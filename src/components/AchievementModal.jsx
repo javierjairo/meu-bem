@@ -6,6 +6,8 @@ export default function AchievementModal({ aberto, conquista, onFechar, onSalvar
   const [icone, setIcone] = useState('🏆');
   const [cor, setCor] = useState('#a855f7');
   const [secreta, setSecreta] = useState(false);
+  const [jaDesbloqueada, setJaDesbloqueada] = useState(false);
+  const [dataDesbloqueio, setDataDesbloqueio] = useState('');
 
   const editando = Boolean(conquista?.id_conquista);
 
@@ -16,12 +18,16 @@ export default function AchievementModal({ aberto, conquista, onFechar, onSalvar
       setIcone(conquista.icone || '🏆');
       setCor(conquista.cor || '#a855f7');
       setSecreta(conquista.secreta || false);
+      setJaDesbloqueada(conquista._jaDesbloqueada || false);
+      setDataDesbloqueio(conquista._dataDesbloqueio || '');
     } else {
       setTitulo('');
       setDescricao('');
       setIcone('🏆');
       setCor('#a855f7');
       setSecreta(false);
+      setJaDesbloqueada(false);
+      setDataDesbloqueio('');
     }
   }, [conquista, aberto]);
 
@@ -29,7 +35,15 @@ export default function AchievementModal({ aberto, conquista, onFechar, onSalvar
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSalvar({ titulo, descricao, icone, cor, secreta });
+    onSalvar({
+      titulo,
+      descricao,
+      icone,
+      cor,
+      secreta,
+      _jaDesbloqueada: jaDesbloqueada,
+      _dataDesbloqueio: dataDesbloqueio,
+    });
   };
 
   const emojis = ['🏆', '🌟', '💯', '🎬', '👨‍🍳', '✈️', '🔧', '❤️', '🎵', '📚', '🍕', '🎮', '🏖️', '🎂', '💍', '🐾', '🌙', '☀️', '🎪', '🏠'];
@@ -193,9 +207,54 @@ export default function AchievementModal({ aberto, conquista, onFechar, onSalvar
               style={{ accentColor: '#a855f7', width: '16px', height: '16px' }}
             />
             <span style={{ color: '#9ca3af', fontSize: '12px' }}>
-              🔒 Conquista secreta (esconde título e descrição até desbloquear)
+              🔒 Conquista secreta (esconde até desbloquear)
             </span>
           </label>
+
+          {/* Divisor */}
+          <div style={{
+            height: '1px',
+            background: 'linear-gradient(to right, transparent, rgba(168,85,247,0.2), transparent)',
+            margin: '4px 0',
+          }} />
+
+          {/* Já desbloqueada? */}
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            padding: '8px 12px',
+            borderRadius: '12px',
+            background: jaDesbloqueada ? 'rgba(34,197,94,0.08)' : 'transparent',
+            border: `1px solid ${jaDesbloqueada ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)'}`,
+          }}>
+            <input
+              type="checkbox"
+              checked={jaDesbloqueada}
+              onChange={(e) => setJaDesbloqueada(e.target.checked)}
+              style={{ accentColor: '#22c55e', width: '16px', height: '16px' }}
+            />
+            <span style={{ color: jaDesbloqueada ? '#4ade80' : '#9ca3af', fontSize: '12px' }}>
+              ✅ Já conquistamos! (marcar como desbloqueada)
+            </span>
+          </label>
+
+          {/* Data de desbloqueio */}
+          {jaDesbloqueada && (
+            <div>
+              <label style={labelStyle}>Data da conquista</label>
+              <input
+                type="date"
+                value={dataDesbloqueio}
+                onChange={(e) => setDataDesbloqueio(e.target.value)}
+                style={{
+                  ...inputStyle,
+                  colorScheme: 'dark',
+                }}
+              />
+            </div>
+          )}
 
           {/* Botões */}
           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
@@ -233,7 +292,7 @@ export default function AchievementModal({ aberto, conquista, onFechar, onSalvar
                 boxShadow: '0 4px 16px rgba(124,58,237,0.25)',
               }}
             >
-              {carregando ? '...' : editando ? 'Salvar' : 'Criar Conquista'}
+              {carregando ? '...' : editando ? 'Salvar' : jaDesbloqueada ? '🏆 Criar Desbloqueada' : 'Criar Conquista'}
             </button>
           </div>
         </form>

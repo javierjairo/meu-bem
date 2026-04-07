@@ -1,8 +1,24 @@
+import { useState } from 'react';
 
-
-export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio, onDesbloquear, onEditar, automatica }) {
+export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio, onDesbloquear, onEditar, automatica, secretaNumero }) {
   const bloqueada = !desbloqueada;
   const secreta = conquista.secreta && bloqueada;
+
+  const [pedindoSenha, setPedindoSenha] = useState(false);
+  const [senha, setSenha] = useState('');
+  const [senhaErrada, setSenhaErrada] = useState(false);
+
+  const tentarRevelar = () => {
+    if (senha.trim().toLowerCase() === 'conseguimos') {
+      setPedindoSenha(false);
+      setSenha('');
+      setSenhaErrada(false);
+      onDesbloquear(conquista);
+    } else {
+      setSenhaErrada(true);
+      setTimeout(() => setSenhaErrada(false), 2000);
+    }
+  };
 
   return (
     <div
@@ -48,7 +64,7 @@ export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio
           lineHeight: 1.3,
         }}
       >
-        {secreta ? 'Conquista Secreta' : conquista.titulo}
+        {secreta ? `Conquista Secreta ${secretaNumero || ''}` : conquista.titulo}
       </h4>
 
       {/* Descrição */}
@@ -92,7 +108,7 @@ export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio
       )}
 
       {/* Botões de ação */}
-      <div style={{ marginTop: 'auto', display: 'flex', gap: '6px', paddingTop: '8px', alignItems: 'center' }}>
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '8px', alignItems: 'center', width: '100%' }}>
         {bloqueada && !secreta && automatica && (
           <span
             style={{
@@ -128,7 +144,94 @@ export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio
             🔓 Desbloquear
           </button>
         )}
-        {!secreta && !automatica && (
+
+        {/* Botão Revelar conquista secreta */}
+        {bloqueada && secreta && !pedindoSenha && (
+          <button
+            onClick={() => setPedindoSenha(true)}
+            style={{
+              padding: '5px 14px',
+              borderRadius: '9999px',
+              border: '1px solid rgba(251,191,36,0.25)',
+              background: 'rgba(251,191,36,0.08)',
+              color: '#fbbf24',
+              fontSize: '10px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              letterSpacing: '0.03em',
+            }}
+          >
+            🔓 Revelar
+          </button>
+        )}
+
+        {/* Input de senha para conquista secreta */}
+        {bloqueada && secreta && pedindoSenha && (
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <input
+              type="text"
+              placeholder="Digite a senha..."
+              value={senha}
+              onChange={e => setSenha(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && tentarRevelar()}
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '6px 10px',
+                borderRadius: '10px',
+                border: `1px solid ${senhaErrada ? 'rgba(248,113,113,0.5)' : 'rgba(251,191,36,0.3)'}`,
+                background: 'rgba(255,255,255,0.05)',
+                color: '#e5e7eb',
+                fontSize: '11px',
+                textAlign: 'center',
+                outline: 'none',
+                boxSizing: 'border-box',
+                animation: senhaErrada ? 'senhaShake 0.4s ease' : 'none',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                onClick={() => { setPedindoSenha(false); setSenha(''); setSenhaErrada(false); }}
+                style={{
+                  flex: 1,
+                  padding: '4px',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'transparent',
+                  color: '#6b7280',
+                  fontSize: '9px',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
+              <button
+                onClick={tentarRevelar}
+                style={{
+                  flex: 2,
+                  padding: '4px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'rgba(251,191,36,0.15)',
+                  color: '#fbbf24',
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
+            {senhaErrada && (
+              <p style={{ fontSize: '9px', color: '#f87171', margin: 0 }}>
+                Senha incorreta 😅
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Botão editar — aparece em todos (exceto secretos bloqueados e automáticos) */}
+        {!automatica && !(secreta && bloqueada) && (
           <button
             onClick={() => onEditar(conquista)}
             style={{
@@ -145,6 +248,16 @@ export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio
           </button>
         )}
       </div>
+
+      <style>{`
+        @keyframes senhaShake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-6px); }
+          40% { transform: translateX(6px); }
+          60% { transform: translateX(-4px); }
+          80% { transform: translateX(4px); }
+        }
+      `}</style>
     </div>
   );
 }

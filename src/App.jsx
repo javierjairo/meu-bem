@@ -6,6 +6,7 @@ import Gallery from './pages/Gallery';
 import Pets from './pages/Pets';
 import ParaNos from './pages/ParaNos';
 import Trofeus from './pages/Trofeus';
+import Motivos from './pages/Motivos';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="pets" element={<Pets />} />
             <Route path="para-nos" element={<ParaNos />} />
             <Route path="trofeus" element={<Trofeus />} />
+            <Route path="motivos" element={<Motivos />} />
           </Route>
         </Routes>
       </HashRouter>

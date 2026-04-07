@@ -4,7 +4,6 @@ import { supabase, supabaseConfigurado } from '../lib/supabaseClient';
 import SectionTitle from '../components/SectionTitle';
 import AchievementCard from '../components/AchievementCard';
 import AchievementModal from '../components/AchievementModal';
-import CapsuleLogin from '../components/CapsuleLogin';
 
 export default function Trofeus() {
   const { user, loading: authLoading } = useAuth();
@@ -48,20 +47,41 @@ export default function Trofeus() {
     setSalvando(true);
     setErro('');
     try {
+      // Separar campos internos dos dados do banco
+      const { _jaDesbloqueada, _dataDesbloqueio, ...dadosBanco } = dados;
+
       if (editando?.id_conquista) {
-        // UPDATE
+        // UPDATE da conquista
         const { error } = await supabase
           .from('conquistas')
-          .update(dados)
+          .update(dadosBanco)
           .eq('id_conquista', editando.id_conquista);
         if (error) throw error;
       } else {
-        // INSERT
+        // INSERT nova conquista
         const ordem = conquistas.length + 1;
-        const { error } = await supabase
+        const { data: novaConquista, error } = await supabase
           .from('conquistas')
-          .insert({ ...dados, ordem });
+          .insert({ ...dadosBanco, ordem })
+          .select()
+          .single();
         if (error) throw error;
+
+        // Se marcou como já desbloqueada, inserir desbloqueio para o user atual
+        if (_jaDesbloqueada && novaConquista) {
+          const dtDesb = _dataDesbloqueio
+            ? new Date(_dataDesbloqueio).toISOString()
+            : new Date().toISOString();
+
+          await supabase
+            .from('conquistas_usuario')
+            .upsert({
+              id_conquista: novaConquista.id_conquista,
+              usuario_id: user.id,
+              dt_desbloqueio: dtDesb,
+              notificada: true, // já sabe, não precisa toast
+            }, { onConflict: 'id_conquista,usuario_id', ignoreDuplicates: true });
+        }
       }
 
       setModalAberto(false);
@@ -106,25 +126,11 @@ export default function Trofeus() {
     desbloqueios.some(d => d.id_conquista === c.id_conquista && d.usuario_id === user?.id)
   ).length;
 
-  if (authLoading) return null;
-
   return (
     <div className="w-full animate-fadeIn pb-8 sm:pb-12">
       <SectionTitle title="Troféus" subtitle="Nossas conquistas desbloqueadas juntos" />
 
-      {!user ? (
-        <div style={{
-          maxWidth: '400px',
-          margin: '40px auto',
-          padding: '28px 20px',
-          borderRadius: '20px',
-          border: '1px solid rgba(168, 85, 247, 0.15)',
-          background: 'rgba(255, 255, 255, 0.02)',
-        }}>
-          <CapsuleLogin />
-        </div>
-      ) : (
-        <>
+      <>
           {/* Stats bar */}
           <div style={{
             display: 'flex',
@@ -240,6 +246,9 @@ export default function Trofeus() {
               {conquistas.map(c => {
                 const desbloqueio = getDesbloqueio(c.id_conquista);
                 const AUTOMATICAS = ['Primeiro Login', 'Primeira Cápsula', '100 Dias Juntos'];
+                // Numerar sequencialmente as conquistas secretas
+                const secretas = conquistas.filter(x => x.secreta);
+                const secretaIdx = secretas.findIndex(x => x.id_conquista === c.id_conquista);
                 return (
                   <AchievementCard
                     key={c.id_conquista}
@@ -247,8 +256,17 @@ export default function Trofeus() {
                     desbloqueada={Boolean(desbloqueio)}
                     dtDesbloqueio={desbloqueio?.dt_desbloqueio}
                     onDesbloquear={desbloquear}
-                    onEditar={(cq) => { setEditando(cq); setModalAberto(true); }}
+                    onEditar={(cq) => {
+                      const desb = getDesbloqueio(cq.id_conquista);
+                      setEditando({
+                        ...cq,
+                        _jaDesbloqueada: Boolean(desb),
+                        _dataDesbloqueio: desb?.dt_desbloqueio ? desb.dt_desbloqueio.split('T')[0] : '',
+                      });
+                      setModalAberto(true);
+                    }}
                     automatica={AUTOMATICAS.includes(c.titulo)}
+                    secretaNumero={secretaIdx >= 0 ? secretaIdx + 1 : null}
                   />
                 );
               })}
@@ -275,7 +293,6 @@ export default function Trofeus() {
             carregando={salvando}
           />
         </>
-      )}
     </div>
   );
 }
