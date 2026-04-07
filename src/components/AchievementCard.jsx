@@ -230,8 +230,8 @@ export default function AchievementCard({ conquista, desbloqueada, dtDesbloqueio
           </div>
         )}
 
-        {/* Botão editar — aparece em todos (exceto secretos bloqueados e automáticos) */}
-        {!automatica && !(secreta && bloqueada) && (
+        {/* Botão editar — aparece em todos (exceto secretas bloqueadas) */}
+        {!(secreta && bloqueada) && (
           <button
             onClick={() => onEditar(conquista)}
             style={{
