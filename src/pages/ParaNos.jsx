@@ -1,8 +1,90 @@
+import { useState, useEffect } from 'react';
 import { mockData } from '../data/mockData';
 import SectionTitle from '../components/SectionTitle';
 import PolaroidCarousel from '../components/PolaroidCarousel';
 import TimeCapsuleSection from '../components/TimeCapsuleSection';
 import { Clapperboard, Moon, Music2, Heart } from 'lucide-react';
+
+const INICIO_NAMORO = new Date('2026-02-14T00:00:00');
+
+function ContadorNamoro() {
+  const [tempo, setTempo] = useState({});
+
+  useEffect(() => {
+    const calcular = () => {
+      const agora = new Date();
+      const diff = agora - INICIO_NAMORO;
+      if (diff < 0) { setTempo({ dias: 0, horas: 0, minutos: 0 }); return; }
+
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      setTempo({ dias, horas, minutos });
+    };
+
+    calcular();
+    const id = setInterval(calcular, 60000); // atualiza a cada minuto
+    return () => clearInterval(id);
+  }, []);
+
+  const unidadeStyle = {
+    textAlign: 'center',
+  };
+
+  const valorStyle = {
+    fontSize: '28px',
+    fontWeight: 800,
+    fontFamily: "'Inter', sans-serif",
+    background: 'linear-gradient(to bottom, #f9a8d4, #c084fc)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    lineHeight: 1,
+  };
+
+  const rotuloStyle = {
+    fontSize: '9px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.15em',
+    color: '#6b7280',
+    marginTop: '4px',
+  };
+
+  return (
+    <div style={{
+      maxWidth: '320px',
+      margin: '0 auto 32px',
+      padding: '20px 16px',
+      borderRadius: '16px',
+      border: '1px solid rgba(168, 85, 247, 0.15)',
+      background: 'rgba(255, 255, 255, 0.02)',
+      textAlign: 'center',
+    }}>
+      <p style={{
+        fontSize: '11px',
+        color: 'rgba(168,132,252,0.5)',
+        fontStyle: 'italic',
+        marginBottom: '12px',
+      }}>
+        💜 Juntos desde 14 de fevereiro de 2026
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+        <div style={unidadeStyle}>
+          <p style={valorStyle}>{tempo.dias || 0}</p>
+          <p style={rotuloStyle}>dias</p>
+        </div>
+        <div style={unidadeStyle}>
+          <p style={valorStyle}>{tempo.horas || 0}</p>
+          <p style={rotuloStyle}>horas</p>
+        </div>
+        <div style={unidadeStyle}>
+          <p style={valorStyle}>{tempo.minutos || 0}</p>
+          <p style={rotuloStyle}>min</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const ICON_MAP = {
   person1: [Clapperboard, Moon],
@@ -52,6 +134,9 @@ export default function ParaNos() {
   return (
     <div className="w-full animate-fadeIn pb-8 sm:pb-12">
       <SectionTitle title="Para Nós" subtitle="Algumas pequenas fofuras pra você meu bem" />
+
+      {/* Contador de namoro */}
+      <ContadorNamoro />
 
       <div className="mt-8 sm:mt-12 mb-16 sm:mb-24 slide-up px-1 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-4 mb-10 sm:mb-14 max-w-xl mx-auto px-2">

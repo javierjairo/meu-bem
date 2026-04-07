@@ -5,6 +5,7 @@ import Profiles from './pages/Profiles';
 import Gallery from './pages/Gallery';
 import Pets from './pages/Pets';
 import ParaNos from './pages/ParaNos';
+import Trofeus from './pages/Trofeus';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="galeria" element={<Gallery />} />
             <Route path="pets" element={<Pets />} />
             <Route path="para-nos" element={<ParaNos />} />
+            <Route path="trofeus" element={<Trofeus />} />
           </Route>
         </Routes>
       </HashRouter>
