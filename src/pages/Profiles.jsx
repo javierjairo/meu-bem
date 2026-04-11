@@ -1,5 +1,6 @@
 import { mockData } from '../data/mockData';
 import SectionTitle from '../components/SectionTitle';
+import EstatisticasInutils from '../components/EstatisticasInutils';
 
 export default function Profiles() {
   const { person1, person2 } = mockData.profiles;
@@ -47,6 +48,8 @@ export default function Profiles() {
         <ProfileCard person={person1} />
         <ProfileCard person={person2} />
       </div>
+
+      <EstatisticasInutils />
     </div>
   );
 }
