@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useClima } from "./ClimaContext";
 
 // ============================================================
 // Detecção de dispositivo
@@ -23,7 +24,9 @@ function getDeviceCategory() {
 // ============================================================
 // Versão CSS pura para mobile — ZERO impacto na performance
 // ============================================================
-function CSSStars({ count }) {
+function CSSStars({ count, clima }) {
+  const corBase = clima?.particulas?.colors?.[0] || '#fff';
+
   const stars = useMemo(() => {
     const result = [];
     for (let i = 0; i < count; i++) {
@@ -60,7 +63,7 @@ function CSSStars({ count }) {
             width: star.size,
             height: star.size,
             borderRadius: '50%',
-            backgroundColor: '#fff',
+            backgroundColor: corBase,
             opacity: star.opacity,
             animation: `starTwinkle ${star.duration} ease-in-out ${star.delay} infinite alternate`,
           }}
@@ -77,9 +80,9 @@ function CSSStars({ count }) {
 }
 
 // ============================================================
-// Versão com partículas para desktop (mantém a experiência completa)
+// Versão com partículas para desktop (reativa ao clima)
 // ============================================================
-function DesktopParticles() {
+function DesktopParticles({ clima }) {
   const [init, setInit] = useState(false);
 
   useEffect(() => {
@@ -101,6 +104,9 @@ function DesktopParticles() {
     return () => { cancelled = true; };
   }, []);
 
+  // Configurações reativas ao clima
+  const p = clima?.particulas || {};
+  
   const options = useMemo(() => ({
     background: { color: { value: "transparent" } },
     fpsLimit: 60,
@@ -116,7 +122,7 @@ function DesktopParticles() {
       },
     },
     particles: {
-      color: { value: ["#ffffff", "#e0c3fc", "#ffc3f2"] },
+      color: { value: p.colors || ["#ffffff", "#e0c3fc", "#ffc3f2"] },
       links: {
         color: "#d8b4e2",
         distance: 160,
@@ -126,25 +132,38 @@ function DesktopParticles() {
         shadow: { enable: true, color: "#d8b4e2", blur: 5 },
       },
       move: {
-        direction: "none",
+        direction: p.direction || "none",
         enable: true,
-        outModes: { default: "bounce" },
-        random: false,
-        speed: 0.5,
+        outModes: { default: "out" },
+        random: (p.direction === 'none'),
+        speed: p.speed || 0.5,
         straight: false,
+        gravity: {
+          enable: (p.gravity || 0) > 0,
+          acceleration: p.gravity || 0,
+        },
       },
       number: { density: { enable: true, area: 800 }, value: 90 },
       opacity: {
-        value: { min: 0.2, max: 0.9 },
-        animation: { enable: true, speed: 1, minimumValue: 0.2 },
+        value: p.opacity || { min: 0.2, max: 0.9 },
+        animation: { enable: true, speed: 1, minimumValue: 0.1 },
       },
       shape: { type: "circle" },
-      size: { value: { min: 1, max: 2.5 } },
+      size: { value: p.size || { min: 1, max: 2.5 } },
       shadow: { enable: true, blur: 8, color: "#ffffff" },
     },
     detectRetina: true,
     fullScreen: { enable: true, zIndex: 0 },
-  }), []);
+  }), [
+    p.colors?.join(','),
+    p.direction,
+    p.speed,
+    p.gravity,
+    p.opacity?.min,
+    p.opacity?.max,
+    p.size?.min,
+    p.size?.max,
+  ]);
 
   if (!init || !window.__ParticlesComponent) return null;
 
@@ -153,25 +172,84 @@ function DesktopParticles() {
 }
 
 // ============================================================
+// Gradiente de fundo (a "cor do céu" atrás de tudo)
+// ============================================================
+function BackgroundGradient({ gradiente }) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: -1,
+        background: gradiente || 'linear-gradient(180deg, #050510, #0a0a1a, #0d0d20)',
+        transition: 'background 5s ease', // Transição suave de 5 segundos
+      }}
+    />
+  );
+}
+
+// ============================================================
+// Badge discreto de clima (canto inferior)
+// ============================================================
+function ClimaBadge({ clima }) {
+  if (!clima?.temp) return null;
+
+  const emojiMap = {
+    clear: '✨', clouds: '☁️', rain: '🌧️', snow: '❄️', mist: '🌫️',
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: '12px',
+        right: '12px',
+        zIndex: 50,
+        padding: '4px 10px',
+        borderRadius: '9999px',
+        background: 'rgba(0,0,0,0.4)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        fontSize: '10px',
+        color: '#6b7280',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}
+    >
+      <span>{emojiMap[clima.vibe] || '🌙'}</span>
+      <span>{clima.temp}°C</span>
+      <span style={{ color: '#374151' }}>Fortaleza</span>
+    </div>
+  );
+}
+
+// ============================================================
 // Componente principal — escolhe a versão certa por dispositivo
 // ============================================================
 export default function ParticleBackground() {
   const [category, setCategory] = useState('desktop');
+  const { clima } = useClima();
 
   useEffect(() => {
     setCategory(getDeviceCategory());
   }, []);
 
-  // Low-end (Samsung M14, etc): 15 estrelas CSS simples, zero JS pesado
-  if (category === 'lowend') {
-    return <CSSStars count={15} />;
-  }
+  return (
+    <>
+      {/* Camada 0: Gradiente de fundo reativo ao clima */}
+      <BackgroundGradient gradiente={clima?.gradiente} />
 
-  // Mobile médio (iPhone 12, etc): 25 estrelas CSS com brilho
-  if (category === 'mobile') {
-    return <CSSStars count={25} />;
-  }
+      {/* Camada 1: Partículas */}
+      {category === 'lowend' && <CSSStars count={15} clima={clima} />}
+      {category === 'mobile' && <CSSStars count={25} clima={clima} />}
+      {category === 'desktop' && <DesktopParticles clima={clima} />}
 
-  // Desktop: experiência completa com tsParticles
-  return <DesktopParticles />;
+      {/* Camada 2: Badge de clima discreto */}
+      <ClimaBadge clima={clima} />
+    </>
+  );
 }

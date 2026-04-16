@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function AchievementModal({ aberto, conquista, onFechar, onSalvar, carregando }) {
+export default function AchievementModal({ aberto, conquista, onFechar, onSalvar, onExcluir, carregando }) {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [icone, setIcone] = useState('🏆');
@@ -217,6 +217,23 @@ export default function AchievementModal({ aberto, conquista, onFechar, onSalvar
               {carregando ? '...' : editando ? 'Salvar' : jaDesbloqueada ? '🏆 Criar Desbloqueada' : 'Criar Conquista'}
             </button>
           </div>
+
+          {/* Botão Excluir — só aparece ao editar */}
+          {editando && onExcluir && (
+            <button
+              type="button"
+              onClick={() => onExcluir(conquista)}
+              disabled={carregando}
+              style={{
+                width: '100%', padding: '8px', borderRadius: '9999px', marginTop: '6px',
+                border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.06)',
+                color: '#f87171', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                letterSpacing: '0.03em',
+              }}
+            >
+              🗑️ Excluir conquista
+            </button>
+          )}
         </form>
       </div>
     </div>

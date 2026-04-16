@@ -57,6 +57,28 @@ export default function Trofeus() {
           .update(dadosBanco)
           .eq('id_conquista', editando.id_conquista);
         if (error) throw error;
+
+        // Se marcou/manteve como já desbloqueada, atualiza ou cria o desbloqueio
+        if (_jaDesbloqueada) {
+          const dtDesb = _dataDesbloqueio
+            ? new Date(_dataDesbloqueio).toISOString()
+            : new Date().toISOString();
+
+          await supabase
+            .from('conquistas_usuario')
+            .upsert({
+              id_conquista: editando.id_conquista,
+              usuario_id: user.id,
+              dt_desbloqueio: dtDesb,
+              notificada: true,
+            }, { onConflict: 'id_conquista,usuario_id', ignoreDuplicates: false });
+        } else {
+          // Se desmarcou "já desbloqueada", exclui o registro
+          await supabase
+            .from('conquistas_usuario')
+            .delete()
+            .match({ id_conquista: editando.id_conquista, usuario_id: user.id });
+        }
       } else {
         // INSERT nova conquista
         const ordem = conquistas.length + 1;
@@ -90,6 +112,38 @@ export default function Trofeus() {
     } catch (err) {
       console.error('Erro ao salvar:', err);
       setErro('Erro ao salvar conquista');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  // Excluir conquista (e desbloqueios relacionados)
+  const excluirConquista = async (conquista) => {
+    if (!confirm(`Tem certeza que quer excluir "${conquista.titulo}"? Essa ação não pode ser desfeita.`)) return;
+
+    setSalvando(true);
+    setErro('');
+    try {
+      // 1. Deletar desbloqueios relacionados (FK)
+      await supabase
+        .from('conquistas_usuario')
+        .delete()
+        .eq('id_conquista', conquista.id_conquista);
+
+      // 2. Deletar a conquista
+      const { error } = await supabase
+        .from('conquistas')
+        .delete()
+        .eq('id_conquista', conquista.id_conquista);
+
+      if (error) throw error;
+
+      setModalAberto(false);
+      setEditando(null);
+      await buscarDados();
+    } catch (err) {
+      console.error('Erro ao excluir:', err);
+      setErro('Erro ao excluir conquista');
     } finally {
       setSalvando(false);
     }
@@ -290,6 +344,7 @@ export default function Trofeus() {
             conquista={editando}
             onFechar={() => { setModalAberto(false); setEditando(null); }}
             onSalvar={salvarConquista}
+            onExcluir={excluirConquista}
             carregando={salvando}
           />
         </>

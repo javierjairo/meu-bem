@@ -59,6 +59,7 @@ export default function Navbar() {
             <NavLink to="/para-nos" className={getLinkClasses}>Para Nós</NavLink>
             <NavLink to="/trofeus" className={getLinkClasses}>Troféus</NavLink>
             <NavLink to="/motivos" className={getLinkClasses}>Motivos</NavLink>
+            <NavLink to="/universo" className={getLinkClasses}>Universo</NavLink>
           </div>
 
           {/* Mobile hamburger — SVG puro inline para garantir renderização */}
@@ -117,6 +118,7 @@ export default function Navbar() {
           <NavLink to="/para-nos" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Para Nós</NavLink>
           <NavLink to="/trofeus" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Troféus</NavLink>
           <NavLink to="/motivos" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Motivos</NavLink>
+          <NavLink to="/universo" className={getMobileLinkClasses} onClick={() => setMobileOpen(false)}>Universo</NavLink>
         </div>
       </div>
     </>
